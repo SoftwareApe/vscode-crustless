@@ -3,6 +3,9 @@
     "displayName": "crustless",
     "description": "",
     "version": "0.1.0",
+    "publisher": "SoftwareApe",
+    "repository": "https://github.com/SoftwareApe/vscode-crustless",
+    "license": "MIT",
     "engines": {
         "vscode": "^1.46.0"
     },
