@@ -24,7 +24,21 @@
     "main": "./out/extension.js",
     "contributes": {
         "commands": [
-        ]
+        ],
+        "configuration": {
+            "title": "Crustless",
+            "properties": {
+              "crustless.config": {
+                "type": "string",
+                "description": "Uncrustify configuration file to be used. The path must be relative to the workspace root or an absolute path."
+              },
+              "crustless.uncrustify": {
+                "type": "string",
+                "default": "uncrustify",
+                "description": "Path to the uncrustify executable."
+              }
+            }
+          }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",

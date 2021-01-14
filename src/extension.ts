@@ -4,15 +4,15 @@ import { existsSync } from 'fs';
 import { isAbsolute, join } from 'path';
 import { config } from 'process';
 
-function getAbsolutePath(path: string): string | undefined {
+function getAbsolutePath(path: string | undefined): string | undefined {
+    // There's no absolute path for the empty path
+    if (path === null || path === undefined || path === '') {
+        return undefined;
+    }
+
     if (isAbsolute(path)) {
         // nothing to do
         return path;
-    }
-
-    // There's no absolute path for the empty path
-    if (path === '') {
-        return undefined;
     }
 
     // if it's not an absolute path, assume it's relative to the workspace root
@@ -35,24 +35,36 @@ export function activate(context: vscode.ExtensionContext) {
                 );
 
                 let text = document.getText(wholeLineRange);
-                let configFile = getAbsolutePath('.uncrustify');
- 
+                let config: string | undefined = vscode.workspace.getConfiguration('crustless').get('config');
+                let executable: string | undefined = vscode.workspace.getConfiguration('crustless').get('uncrustify');
+                if (executable === undefined) {
+                    executable = "uncrustify";
+                }
+                let configFile = getAbsolutePath(config);
+                
+                if (configFile === undefined) {
+                    vscode.window.showErrorMessage("Please specify uncrustify configuration in the settings (crustless.config).");
+                    return [];
+                }
+
+                if (!existsSync(configFile)) {
+                    vscode.window.showErrorMessage("Config file '" + configFile + "' doesn't exist.");
+                    return [];
+                }
+
+                try {
+                    execSync("which " + executable);
+                } catch (_) {
+                    vscode.window.showErrorMessage("Uncrustify not found at " + executable + ".");
+                    return [];
+                }
+
                 try {
                     // --frag keeps the leading whitespace if the selection is only partial
-                    let cmd = 'uncrustify --frag';
-                    if (configFile !== undefined) {
-                        if (!existsSync(configFile)) {
-                            vscode.window.showErrorMessage("Config file '" + configFile + "' doesn't exist.");
-                            return [];
-                        }
-                        cmd += ' -c ' + configFile;
-                    }
+                    let cmd = executable + ' --frag';
+                    cmd += ' -c ' + configFile;
                     let output = execSync(cmd, { input: text }).toString();
 
-                    // replace whole text
-                    //const firstLine = document.lineAt(0);
-                    //const lastLine = document.lineAt(document.lineCount - 1);
-                    //var textRange = new vscode.Range(firstLine.range.start, lastLine.range.end);
                     return [vscode.TextEdit.replace(wholeLineRange, output)];
 
                 } catch (error) {
