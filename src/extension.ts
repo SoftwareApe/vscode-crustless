@@ -60,8 +60,11 @@ export function activate(context: vscode.ExtensionContext) {
                 }
 
                 try {
-                    // --frag keeps the leading whitespace if the selection is only partial
-                    let cmd = executable + ' --frag';
+                    let cmd = executable;
+                    if (range.start.line !== 0 || range.start.character !== 0) {
+                        // --frag keeps the leading whitespace if the selection is only partial
+                        cmd += ' --frag';
+                    }
                     cmd += ' -c ' + configFile;
                     let output = execSync(cmd, { input: text }).toString();
 

@@ -1,9 +1,9 @@
 # Change Log
 
-All notable changes to the "crustless" extension will be documented in this file.
+## 0.1.1
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+* Apply `--frag` flag only on partial selections, or those that don't start at the beginning of the file.
 
-## [Unreleased]
+## 0.1.0
 
-- Initial release
+* Initial release

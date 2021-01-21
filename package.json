@@ -2,7 +2,7 @@
     "name": "crustless",
     "displayName": "crustless",
     "description": "",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "publisher": "SoftwareApe",
     "repository": "https://github.com/SoftwareApe/vscode-crustless",
     "license": "MIT",
