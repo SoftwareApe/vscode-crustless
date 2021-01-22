@@ -27,12 +27,27 @@ function getAbsolutePath(path: string | undefined): string | undefined {
 }
 
 export function activate(context: vscode.ExtensionContext) {
+    let languageMap = new Map<string, string>();
+    languageMap.set("c", "C");
+    languageMap.set("cpp", "CPP");
+    languageMap.set("csharp", "CS");
+    languageMap.set("objective-c", "OC");
+    languageMap.set("objective-cpp", "OC+");
+    languageMap.set("d","D");
+    languageMap.set("java", "JAVA");
     vscode.languages.registerDocumentRangeFormattingEditProvider(['c', 'cpp', 'csharp', 'objective-c', 'objective-cpp', 'd', 'java'], {
         provideDocumentRangeFormattingEdits(document: vscode.TextDocument, range: vscode.Range): vscode.TextEdit[] {
                 let wholeLineRange = new vscode.Range (
                     new vscode.Position(range.start.line, 0),
                     new vscode.Position(range.end.line + 1, 0)
                 );
+
+                let uncrustifyLanguage = languageMap.get(document.languageId);
+
+                if (uncrustifyLanguage === undefined) {
+                    vscode.window.showErrorMessage("Missing language conversion for languageId " + document.languageId);
+                    return [];
+                }
 
                 let text = document.getText(wholeLineRange);
                 let config: string | undefined = vscode.workspace.getConfiguration('crustless').get('config');
@@ -41,7 +56,7 @@ export function activate(context: vscode.ExtensionContext) {
                     executable = "uncrustify";
                 }
                 let configFile = getAbsolutePath(config);
-                
+
                 if (configFile === undefined) {
                     vscode.window.showErrorMessage("Please specify uncrustify configuration in the settings (crustless.config).");
                     return [];
@@ -65,7 +80,7 @@ export function activate(context: vscode.ExtensionContext) {
                         // --frag keeps the leading whitespace if the selection is only partial
                         cmd += ' --frag';
                     }
-                    cmd += ' -c ' + configFile;
+                    cmd += ' -c ' + configFile + " -l " + uncrustifyLanguage;
                     let output = execSync(cmd, { input: text }).toString();
 
                     return [vscode.TextEdit.replace(wholeLineRange, output)];
@@ -73,7 +88,7 @@ export function activate(context: vscode.ExtensionContext) {
                 } catch (error) {
                     vscode.window.showErrorMessage("Formatting with uncrustify failed with exit code " + error.status + ".\n" + error.message );
                 }
-                
+
                 // no edits if it fails
                 return [];
             }
